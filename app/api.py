@@ -3,7 +3,10 @@ from backend.compare import Monitor
 import sys, os, getpass
 
 class ReplyHandler:
-	def handler(reply):
+	def __init__(self):
+		pass
+
+	def handler(self, reply):
 		if reply['msg'][0]:
 			if isinstance(reply['msg'][1], bytes):
 				return reply['msg'][1].decode('utf-8')
@@ -21,7 +24,7 @@ class wmApi(ReplyHandler):
 
 	def validate_file(self, path):
 		if(os.path.isfile(path)):
-			continue
+			pass
 		else:
 			print('File({}) does not exist'.format(path))
 			sys.exit()
@@ -34,15 +37,24 @@ class wmApi(ReplyHandler):
 			return False
 
 	def check(self):
-		pass
+		paths = self.file_func.files_paths()
+		changes = []
+		if len(paths) >=1 :
+			for path in paths:
+				print("{:<15s}{:>10s}".format(path, str(self.compare(path, show=False))))
+		else:
+			print("Add a file")
 
 
-	def compare(self, path):
+	def compare(self, path, show=True):
 		self.validate_file(path)
 		old = self.reply.handler(self.file_func.get_content(path))
 		new = self.reply.handler(self.file_func.read_file(path))
-		self.monitor.diff(old, new)
-
+		if show:
+			self.monitor.diff(old, new)
+		else:
+			change = self.monitor.diff(old, new, display=show)
+			return change
 
 	def add(self, path):
 		self.validate_file(path)
@@ -57,6 +69,10 @@ class wmApi(ReplyHandler):
 	def delete(self, path):
 		self.validate_file(path)
 		db_path = self.reply.handler(self.file_func.get_path(path))
+		if path == db_path:
+			self.reply.handler(self.file_func.delete_file(path))
+		else:
+			pass
 
 	def display(self, path):
 		self.validate_file(path)
@@ -64,5 +80,8 @@ class wmApi(ReplyHandler):
 		print(db_data)
 
 	def replace(self, path):
-		pass
-
+		self.validate_file(path)
+		db_path = self.reply.handler(self.file_func.get_path(path))
+		if path == db_path:
+			content = self.file_func.get_content(db_path)
+			self.file_func.write_file(db_path, content)

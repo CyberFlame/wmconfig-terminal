@@ -60,8 +60,7 @@ class FileFunctions:
 			self.close_connection()
 			return {'msg':[True, '{} has been added'.format(path)]}
 		except sqlite3.Error as e:
-			print(insert('files', schema[1]['files']))
-			return {'msg':[False, 'Database Error',e.args]}
+			return {'msg':[False, 'Database Error ({})'.format(e.args)]}
 
 
 	def update_file(self, path):
@@ -71,7 +70,7 @@ class FileFunctions:
 			self.cursor.execute(update('files', schema['files'], 'path'),(path, content, path))
 			self.conn.commit()
 			self.close_connection()
-			return {'msg':[True, '{} has been added'.format(path)]}
+			return {'msg':[True, '{} has been updated'.format(path)]}
 		except sqlite3.Error as e:
 			return {'msg':[False, 'Database Error: '.format(e.args)]}
 
@@ -79,7 +78,7 @@ class FileFunctions:
 	def delete_file(self, path):
 		try:
 			self.create_connection()
-			self.cursor.execute(delete('files', 'path'), (path, ))
+			self.cursor.execute(delete('files', 'path'), (path,))
 			self.conn.commit()
 			self.close_connection()
 			return {'msg':[True, '{} has been deleted'.format(path)]}
@@ -103,21 +102,46 @@ class FileFunctions:
 			self.create_connection()
 			self.cursor.execute(select('files',schema['files'], 'path'),(path,))
 			record = self.cursor.fetchall()
-			file_path = record[0][1]
+			file_path = record[0][0]
 			self.close_connection()
 			return {'msg':[True,file_path.encode('utf-8')]}
+		except sqlite3.Error as e:
+			return {'msg':[False, 'Database Error: {}'.format(e.args)]}
 
 	def read_file(self, path):
 		file_data = None
 		with open(path,'rb') as file:
 			file_data = file.read()
 
-		return file_data
+		return {'msg':[True,file_data]}
+
+	def write_file(self, path, content):
+		config = open(path,'w')
+		config.write(content)
+		config.close()
 
 	def create_connection(self):
-		self.conn = sqlite3.connect('/var/lib/wmconfig/wmconfig.db')
-		self.cursor = self.conn.cursor()
+		path = '/var/lib/wmconfig/wmconfig.db'
+		if(os.path.isfile(path)):
+			self.conn = sqlite3.connect(path)
+			self.cursor = self.conn.cursor()
+		else:
+			print('Database file not found')
 
 	def close_connection(self):
 		self.conn.close()
 
+
+	def files_paths(self):
+		paths = []
+		try:
+			self.create_connection()
+			self.cursor.execute('SELECT PATH FROM FILES')
+			record = self.cursor.fetchall()
+			for i in record:
+				paths.append(i[0])
+
+			self.close_connection()
+			return paths
+		except sqlite3.Error as e:
+			pass

@@ -19,7 +19,10 @@ ANSI = {"reset":  "\x1b[0m",    # reset everything
         "normal": "\x1b[39m"}   # default color
 
 class Color:
-	def colorize(*args):
+	def __init__(self):
+		pass
+
+	def colorize(self,*args):
 		colors = 0
 		strings = 0
 		result = []
@@ -45,7 +48,7 @@ class Color:
 		return ''.join(result)
 
 
-	def decolorize(string):
+	def decolorize(self, string):
 		regex = "\x01?\x1b\\[((?:\\d|;)*)([a-zA-Z])\x02?"
 		return re.sub(regex, "", str(string))
 
