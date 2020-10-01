@@ -58,9 +58,9 @@ class FileFunctions:
 			self.cursor.execute(insert('files', schema['files']),(path, content))
 			self.conn.commit()
 			self.close_connection()
-			return {'msg':[True, '{} has been added'.format(path)]}
+			return {'msg':[True, "'{}' has been added to the data".format(path)]}
 		except sqlite3.Error as e:
-			return {'msg':[False, '{} already exists in database'.format(path)]}
+			return {'msg':[False, "'{}' already exists in the database".format(path)]}
 
 	def update_file(self, path):
 		content = self.read_file(path)
@@ -69,9 +69,9 @@ class FileFunctions:
 			self.cursor.execute(update('files', schema['files'], 'path'),(path, content, path))
 			self.conn.commit()
 			self.close_connection()
-			return {'msg':[True, '{} has been updated'.format(path)]}
+			return {'msg':[True, "'{}' has been updated in the database".format(path)]}
 		except sqlite3.Error as e:
-			return {'msg':[False, 'Database Error: '.format(e.args)]}
+			return {'msg':[False, '{}'.format(e.args)]}
 
 
 	def delete_file(self, path):
@@ -80,7 +80,7 @@ class FileFunctions:
 			self.cursor.execute(delete('files', 'path'), (path,))
 			self.conn.commit()
 			self.close_connection()
-			return {'msg':[True, '{} has been deleted'.format(path)]}
+			return {'msg':[True, "'{}' has been deleted from database".format(path)]}
 		except sqlite3.Error as e:
 			return {'msg':[False, 'Database Error: {}'.format(e.args)]}
 
@@ -105,10 +105,10 @@ class FileFunctions:
 				file_path = record[0][0]
 				return {'msg':[True,file_path.encode('utf-8')]}
 			else:
-				return {'msg':[False, '{} does not exist in database'.format(path)]}
+				return {'msg':[False, "'{}' does not exist in database".format(path)]}
 			self.close_connection()
 		except sqlite3.Error as e:
-			return {'msg':[False, 'Database Error: {}'.format(e.args)]}
+			return {'msg':[False, '{}'.format(e.args)]}
 
 	def read_file(self, path):
 		file_data = None

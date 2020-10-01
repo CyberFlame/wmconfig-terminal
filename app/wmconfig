@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import argparse, api
 
-text = '''Backups configuration files and monitors changes in them'''
+text = '''Backups configuration/readable files and monitors changes in them'''
 
 parser = argparse.ArgumentParser(description=text)
 parser.add_argument('-c','--check', action='store_true', help='check system for changes in files')
@@ -17,22 +17,30 @@ wmAPI = api.wmApi()
 
 if wmAPI.check_user():
 	if args.check:
+		wmAPI.print_title()
 		wmAPI.check()
 	elif args.compare:
+		wmAPI.print_title()
 		wmAPI.compare(args.compare)
 	elif args.add:
+		wmAPI.print_title()
 		wmAPI.add(args.add)
 	elif args.update:
+		wmAPI.print_title()
 		wmAPI.update(args.update)
 	elif args.delete:
+		wmAPI.print_title()
 		wmAPI.delete(args.delete)
 	elif args.display:
+		wmAPI.print_title()
 		wmAPI.display(args.display)
 	elif args.version:
 		print("wmconfig version 1.0")
 	elif args.replace:
+		wmAPI.print_title()
 		wmAPI.replace(args.replace)
 	else:
 		parser.print_help()
 else:
-	print("Not running as root")
+	print("Not running as root\n")
+	parser.print_help()

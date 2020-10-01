@@ -1,5 +1,5 @@
-from backend.db_functions import FileFunctions
-from backend.compare import Monitor
+from src.functions import FileFunctions
+from src.compare import Monitor
 import sys, os, getpass
 
 class ReplyHandler:
@@ -11,9 +11,9 @@ class ReplyHandler:
 			if isinstance(reply['msg'][1], bytes):
 				return reply['msg'][1].decode('utf-8')
 			else:
-				print(reply['msg'][1])
+				print("<SUCCESS>-[ {} ]".format(reply['msg'][1]))
 		else:
-			print(reply['msg'][1])
+			print("<ERROR>-[ {} ]".format(reply['msg'][1]))
 			sys.exit()
 
 class wmApi(ReplyHandler):
@@ -24,10 +24,12 @@ class wmApi(ReplyHandler):
 
 
 	def validate_file(self, path):
+		n_path = path
+		path = os.path.abspath(path)
 		if(os.path.isfile(path)):
-			pass
+			return path
 		else:
-			print('File({}) does not exist'.format(path))
+			print('Please provide the correct absolute path of this file({})'.format(n_path))
 			sys.exit()
 
 
@@ -40,22 +42,21 @@ class wmApi(ReplyHandler):
 
 
 	def check(self):
-		self.print_title()
-		print('		< Cross checking files with backups >')
 		paths = self.file_func.files_paths()
-		length = len(max(paths, key=len))+15
-		state = {True:' \x1b[31mWarning', False:'\x1b[32mNo Change'}
-		reset = '\x1b[0m'
 		if len(paths) >=1 :
+			print('         < Cross checking files with backups >')
+			length = len(max(paths, key=len))+15
+			state = {True:' \x1b[31mWarning', False:'\x1b[32mNo Change'}
+			reset = '\x1b[0m'
 			for path in paths:
 				change = self.compare(path, show=False)
 				print("  {}[ {} {}]".format(path.ljust(length," "),  str(state[change]).ljust(14,' '),reset))
 		else:
-			print("Add a file")
+			print("	<ERROR>-[ No file has been added to backups ]")
 
 
 	def compare(self, path, show=True):
-		self.validate_file(path)
+		path = self.validate_file(path)
 		old = self.reply.handler(self.file_func.get_content(path))
 		new = self.reply.handler(self.file_func.read_file(path))
 		if show:
@@ -66,20 +67,17 @@ class wmApi(ReplyHandler):
 
 
 	def add(self, path):
-		self.print_title()
-		self.validate_file(path)
+		path = self.validate_file(path)
 		self.reply.handler(self.file_func.add_file(path))
 
 
 	def update(self, path):
-		self.print_title()
-		self.validate_file(path)
+		path = self.validate_file(path)
 		self.reply.handler(self.file_func.update_file(path))
 
 
 	def delete(self, path):
-		self.print_title()
-		self.validate_file(path)
+		path = self.validate_file(path)
 		db_path = self.reply.handler(self.file_func.get_path(path))
 		if path == db_path:
 			self.reply.handler(self.file_func.delete_file(path))
@@ -88,15 +86,13 @@ class wmApi(ReplyHandler):
 
 
 	def display(self, path):
-		self.print_title()
-		self.validate_file(path)
+		path = self.validate_file(path)
 		db_data = self.reply.handler(self.file_func.get_content(path))
 		print(db_data)
 
 
 	def replace(self, path):
-		self.print_title()
-		self.validate_file(path)
+		path = self.validate_file(path)
 		db_path = self.reply.handler(self.file_func.get_path(path))
 		if path == db_path:
 			content = self.reply.handler(self.file_func.get_content(db_path))

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cd /usr/share/wmc/ && ./wmconfig
+cd /usr/share/wmc/ && ./wmconfig "$@"
