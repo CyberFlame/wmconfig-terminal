@@ -22,12 +22,14 @@ class wmApi(ReplyHandler):
 		self.monitor = Monitor()
 		self.reply = ReplyHandler()
 
+
 	def validate_file(self, path):
 		if(os.path.isfile(path)):
 			pass
 		else:
 			print('File({}) does not exist'.format(path))
 			sys.exit()
+
 
 	def check_user(self):
 		user = getpass.getuser()
@@ -36,12 +38,18 @@ class wmApi(ReplyHandler):
 		else:
 			return False
 
+
 	def check(self):
+		self.print_title()
+		print('		< Cross checking files with backups >')
 		paths = self.file_func.files_paths()
-		changes = []
+		length = len(max(paths, key=len))+15
+		state = {True:' \x1b[31mWarning', False:'\x1b[32mNo Change'}
+		reset = '\x1b[0m'
 		if len(paths) >=1 :
 			for path in paths:
-				print("{:<15s}{:>10s}".format(path, str(self.compare(path, show=False))))
+				change = self.compare(path, show=False)
+				print("  {}[ {} {}]".format(path.ljust(length," "),  str(state[change]).ljust(14,' '),reset))
 		else:
 			print("Add a file")
 
@@ -56,17 +64,21 @@ class wmApi(ReplyHandler):
 			change = self.monitor.diff(old, new, display=show)
 			return change
 
+
 	def add(self, path):
+		self.print_title()
 		self.validate_file(path)
 		self.reply.handler(self.file_func.add_file(path))
 
 
 	def update(self, path):
+		self.print_title()
 		self.validate_file(path)
 		self.reply.handler(self.file_func.update_file(path))
 
 
 	def delete(self, path):
+		self.print_title()
 		self.validate_file(path)
 		db_path = self.reply.handler(self.file_func.get_path(path))
 		if path == db_path:
@@ -74,14 +86,22 @@ class wmApi(ReplyHandler):
 		else:
 			pass
 
+
 	def display(self, path):
+		self.print_title()
 		self.validate_file(path)
 		db_data = self.reply.handler(self.file_func.get_content(path))
 		print(db_data)
 
+
 	def replace(self, path):
+		self.print_title()
 		self.validate_file(path)
 		db_path = self.reply.handler(self.file_func.get_path(path))
 		if path == db_path:
-			content = self.file_func.get_content(db_path)
+			content = self.reply.handler(self.file_func.get_content(db_path))
 			self.file_func.write_file(db_path, content)
+			print('{} has been replaced with backup'.format(path))
+
+	def print_title(self):
+		print(" [ Watch My Config version 1.0 ]\n")

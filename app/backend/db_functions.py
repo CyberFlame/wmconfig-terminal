@@ -52,7 +52,7 @@ class FileFunctions:
 
 
 	def add_file(self, path):
-		content = self.read_file(path)
+		content = self.read_file(path)['msg'][1]
 		try:
 			self.create_connection()
 			self.cursor.execute(insert('files', schema['files']),(path, content))
@@ -60,8 +60,7 @@ class FileFunctions:
 			self.close_connection()
 			return {'msg':[True, '{} has been added'.format(path)]}
 		except sqlite3.Error as e:
-			return {'msg':[False, 'Database Error ({})'.format(e.args)]}
-
+			return {'msg':[False, '{} already exists in database'.format(path)]}
 
 	def update_file(self, path):
 		content = self.read_file(path)
@@ -102,9 +101,12 @@ class FileFunctions:
 			self.create_connection()
 			self.cursor.execute(select('files',schema['files'], 'path'),(path,))
 			record = self.cursor.fetchall()
-			file_path = record[0][0]
+			if len(record) >= 1:
+				file_path = record[0][0]
+				return {'msg':[True,file_path.encode('utf-8')]}
+			else:
+				return {'msg':[False, '{} does not exist in database'.format(path)]}
 			self.close_connection()
-			return {'msg':[True,file_path.encode('utf-8')]}
 		except sqlite3.Error as e:
 			return {'msg':[False, 'Database Error: {}'.format(e.args)]}
 
