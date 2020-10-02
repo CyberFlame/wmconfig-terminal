@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import getpass, re, os, sys, shutil
-import server.database as db
+import backend.database as db
 
 def root_check():
 	try:
@@ -23,16 +23,19 @@ class Install:
 
 	def file_handler(self):
 		wm_path = './files/wmconfig'
-		if(os.path.isfile(wm_path) and os.path.exists('/usr/bin/')):
-			os.chmod(wm_path, 0o755)
-			os.popen('cp ./files/wmconfig /usr/bin/')
+		if not os.path.exists('/usr/share/wmc') or not os.path.exists('/var/lib/wmconfig') or not os.path.isfile('/usr/bin/wmconfig'):
+			if os.path.isfile(wm_path):
+				os.chmod(wm_path, 0o755)
+				os.popen('cp ./files/wmconfig /usr/bin/')
 
-		if not os.path.exists('/usr/share/wmc'):
-			os.makedirs('/usr/share/wmc')
+			if not os.path.exists('/usr/share/wmc'):
+				os.makedirs('/usr/share/wmc')
 
-		if os.path.exists('./app'):
-			os.popen('cp -r ./app/* /usr/share/wmc/')
-
+			if os.path.exists('./app'):
+				os.popen('cp -r ./app/* /usr/share/wmc/')
+				print("Finished installation\n")
+		else:
+			print('wmconfig already installed\n')
 
 	def setup_database(self):
 		self.data.create_tables()
@@ -50,13 +53,17 @@ class Uninstall:
 		if os.path.isfile('/usr/bin/wmconfig'):
 			os.remove('/usr/bin/wmconfig')
 
+		if os.path.exists('/var/lib/wmconfig'):
+			shutil.rmtree('/var/lib/wmconfig')
+			print("Finished removing all wmconfig files\n")
+		else:
+			print("wmconfig has already been uninstalled")
+
 
 if __name__ == "__main__":
 	if len(sys.argv)==2 and sys.argv[1]=='install':
 		Install()
-		print("Finished installation\n")
 	elif len(sys.argv)==2 and sys.argv[1]=='uninstall':
 		Uninstall()
-		print("Finished removing all wmconfig files\n")
 	else:
 		print("run setup with 'install' or 'uninstall'\n")

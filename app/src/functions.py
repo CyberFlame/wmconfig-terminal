@@ -63,7 +63,7 @@ class FileFunctions:
 			return {'msg':[False, "'{}' already exists in the database".format(path)]}
 
 	def update_file(self, path):
-		content = self.read_file(path)
+		content = self.read_file(path)['msg'][1]
 		try:
 			self.create_connection()
 			self.cursor.execute(update('files', schema['files'], 'path'),(path, content, path))
