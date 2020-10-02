@@ -13,7 +13,7 @@ class ReplyHandler:
 			else:
 				print("<SUCCESS>-[ {} ]".format(reply['msg'][1]))
 		else:
-			print("<ERROR>-[ {} ]".format(reply['msg'][1]))
+			print("<ERROR>-[ {} ]\n".format(reply['msg'][1]))
 			sys.exit()
 
 class wmApi(ReplyHandler):
@@ -29,7 +29,7 @@ class wmApi(ReplyHandler):
 		if(os.path.isfile(path)):
 			return path
 		else:
-			print('Please provide the correct absolute path of this file({})'.format(n_path))
+			print('Please provide the correct absolute path of this file({})\n'.format(n_path))
 			sys.exit()
 
 
@@ -65,7 +65,6 @@ class wmApi(ReplyHandler):
 			change = self.monitor.diff(old, new, display=show)
 			return change
 
-
 	def add(self, path):
 		path = self.validate_file(path)
 		self.reply.handler(self.file_func.add_file(path))
@@ -84,12 +83,10 @@ class wmApi(ReplyHandler):
 		else:
 			pass
 
-
-	def display(self, path):
+ 	def display(self, path):
 		path = self.validate_file(path)
 		db_data = self.reply.handler(self.file_func.get_content(path))
 		print(db_data)
-
 
 	def replace(self, path):
 		path = self.validate_file(path)
@@ -98,6 +95,8 @@ class wmApi(ReplyHandler):
 			content = self.reply.handler(self.file_func.get_content(db_path))
 			self.file_func.write_file(db_path, content)
 			print('{} has been replaced with backup'.format(path))
+		else:
+			print("'{}' does not exist in system/database".format(path))
 
 	def print_title(self):
 		print(" [ Watch My Config version 1.0 ]\n")
